@@ -1,0 +1,49 @@
+name = "statusphere-tmp-tmp-tmp"
+main = "build/worker/shim.mjs"
+compatibility_date = "2025-04-08"
+
+[build]
+# needed to make "Deploy with Cloudflare" button work, installs rust via rustup
+# if we're in CI and don't have Cargo
+command = "./custom_build.sh"
+watch_dir = ["src", "public", "templates"]
+
+# database for status records
+[[d1_databases]]
+binding = "DB"
+database_name = "statusphere-statuses-tmp-tmp-tmp"
+database_id = "72d9246e-9c60-4c81-a79a-aa7e78074461"
+
+
+# simple kv store for auth state/session mappings
+[[kv_namespaces]]
+binding = "KV"
+id = "c2aebd8bbee64ddc8e7ce2d674bf75ba"
+
+
+# log requests using worker logs
+[observability.logs]
+enabled = true
+invocation_logs = false
+
+[triggers]
+crons = [ "*/1 * * * *" ]
+
+# serves css without having to spin up a worker
+[assets]
+directory = "./public"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+
+# used for live updates via websocket
+[durable_objects]
+bindings = [{ name = "MSGBROKER", class_name = "MsgBroker" }]
+
+[[migrations]]
+tag = "v1"                                              # Should be unique for each entry
+new_sqlite_classes = ["MsgBroker", "JetstreamListener"]
+
+[[migrations]]
+tag = "v2"                              # Should be unique for each entry
+deleted_classes = ["JetstreamListener"]
